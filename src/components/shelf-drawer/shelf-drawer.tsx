@@ -3,6 +3,7 @@
 import Image from 'next/image';
 
 import { useRef, useState, MouseEvent } from 'react';
+import { Shelf } from '@/components/shelf-drawer/shelf';
 
 type Props = {
   imageUrl: string;
@@ -12,48 +13,52 @@ type Props = {
 export const ShelfDrawer = ({ imageUrl, shelves, onChange }: Props) => {
   const [drawing, setDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState<[number, number] | null>(null);
-  const [selectedShelf, setSelectedShelf] = useState(null);
-  const imageRef = useRef();
-  const [currentRect, setCurrentRect] = useState(null); // Temporary rectangle state
+  const [selectedShelf, setSelectedShelf] = useState<number | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const [currentRect, setCurrentRect] = useState(null);
+
   const handleMouseDown = (e: MouseEvent<HTMLImageElement>) => {
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    if (imageRef.current) {
+      const rect = imageRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
-    setStartPoint([x, y]);
-    setDrawing(true);
+      setStartPoint([x, y]);
+      setDrawing(true);
 
-    console.log({ x, y });
-    setSelectedShelf(null);
+      console.log({ x, y });
+      setSelectedShelf(null);
+    }
   };
 
   const handleMouseUp = (e: MouseEvent<HTMLImageElement>) => {
     if (!drawing || !startPoint) return;
 
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const newShelf = [startPoint, [x, y]];
+    if (imageRef.current) {
+      const rect = imageRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const newShelf = [startPoint, [x, y]];
+      setDrawing(false);
 
-    console.log({ shelves, newShelf });
+      setStartPoint(null);
 
-    console.log([...shelves, newShelf]);
-
-    onChange([...shelves, newShelf]);
-    setDrawing(false);
-    setStartPoint(null);
+      onChange([...shelves, newShelf]);
+    }
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLImageElement>) => {
     if (!drawing || !startPoint) return;
 
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setCurrentRect([startPoint, [x, y]]);
+    if (imageRef.current) {
+      const rect = imageRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setCurrentRect([startPoint, [x, y]]);
+    }
   };
 
-  const handleShelfClick = index => e => {
+  const handleShelfClick = (index: number) => {
     setSelectedShelf(index);
   };
 
@@ -80,33 +85,10 @@ export const ShelfDrawer = ({ imageUrl, shelves, onChange }: Props) => {
         onMouseMove={handleMouseMove}
       />
       {shelves?.map((shelf, index) => (
-        <div
-          key={index}
-          onClick={handleShelfClick(index)}
-          style={{
-            position: 'absolute',
-            border: `2px solid ${index === selectedShelf ? 'red' : 'blue'}`,
-            left: `${Math.min(shelf[0][0], shelf[1][0])}px`,
-            top: `${Math.min(shelf[0][1], shelf[1][1])}px`,
-            width: `${Math.abs(shelf[0][0] - shelf[1][0])}px`,
-            height: `${Math.abs(shelf[0][1] - shelf[1][1])}px`,
-            cursor: 'pointer',
-          }}
-        />
+        <Shelf key={index} onClick={() => handleShelfClick(index)} coordinates={shelf} />
       ))}
 
-      {currentRect && (
-        <div
-          style={{
-            position: 'absolute',
-            border: '2px dashed red', // Dashed border for the drawing rectangle
-            left: `${Math.min(currentRect[0][0], currentRect[1][0])}px`,
-            top: `${Math.min(currentRect[0][1], currentRect[1][1])}px`,
-            width: `${Math.abs(currentRect[0][0] - currentRect[1][0])}px`,
-            height: `${Math.abs(currentRect[0][1] - currentRect[1][1])}px`,
-          }}
-        />
-      )}
+      {currentRect && <Shelf isTemporary coordinates={currentRect} />}
 
       <button onClick={removeSelectedShelf} disabled={selectedShelf === null}>
         Remove Selected Shelf

@@ -6,11 +6,11 @@ export default function Home() {
   const [shelves, setShelves] = useState<[number, number][][]>([
     [
       [0, 0],
-      [5, 0],
+      [40, 50],
     ],
     [
       [10, 10],
-      [20, 10],
+      [80, 90],
     ],
   ]);
   const onChange = (shelves: [number, number][][]) => {
