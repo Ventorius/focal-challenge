@@ -5,10 +5,15 @@ import { ShelfShape } from '@/types';
 type Props = ComponentPropsWithoutRef<'div'> & {
   coordinates: ShelfShape;
   isTemporary?: boolean;
+  isSelected?: boolean;
 };
 
-export const Shelf = ({ coordinates, isTemporary, onClick }: Props) => {
+export const Shelf = ({ coordinates, isTemporary, isSelected, onClick }: Props) => {
   const borderStyle = isTemporary ? 'border-dashed border-4 border-red-600' : 'border-dashed border-4 border-white';
+
+  const selectedBorderStyle = isSelected
+    ? 'border-dashed border-4 border-blue-600'
+    : 'border-dashed border-4 border-white';
 
   const bgStyle = isTemporary ? 'bg-red-200 bg-opacity-50' : 'bg-white bg-opacity-50';
 
@@ -22,6 +27,10 @@ export const Shelf = ({ coordinates, isTemporary, onClick }: Props) => {
   };
 
   return (
-    <div className={cn('absolute', borderStyle, bgStyle)} style={generateCoordinates(coordinates)} onClick={onClick} />
+    <div
+      className={cn('absolute', borderStyle, bgStyle, selectedBorderStyle)}
+      style={generateCoordinates(coordinates)}
+      onClick={onClick}
+    />
   );
 };
