@@ -10,7 +10,7 @@ import {
 import type { IShelf } from '@/types';
 import { generateRandomColor } from '@/utils/generateRandomColor';
 
-export const useMouseEvents = (
+export const useEvents = (
   shelves: IShelf[],
   onChange: (shelves: IShelf[]) => void,
   imageRef: RefObject<HTMLImageElement>,
@@ -36,7 +36,7 @@ export const useMouseEvents = (
     return { x: 0, y: 0 };
   };
 
-  const handleMouseDown: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
+  const handleDown: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
     (e: SyntheticEvent) => {
       if (imageRef.current) {
         const { x, y } = getCoordinates(e as MouseEvent | TouchEvent);
@@ -51,7 +51,7 @@ export const useMouseEvents = (
     [],
   );
 
-  const handleMouseUp: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
+  const handleUp: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
     (e: SyntheticEvent) => {
       if (!isDrawing) return;
 
@@ -74,7 +74,7 @@ export const useMouseEvents = (
     [startPoint, shelves, onChange],
   );
 
-  const handleMouseLeave: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
+  const handleLeave: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
     (e: SyntheticEvent) => {
       if ('buttons' in e) {
         if (!isDrawing || e.buttons !== 0) return;
@@ -86,7 +86,7 @@ export const useMouseEvents = (
     [isDrawing],
   );
 
-  const handleMouseMove: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
+  const handleMove: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
     (e: SyntheticEvent) => {
       if (!isDrawing) return;
 
@@ -103,10 +103,10 @@ export const useMouseEvents = (
   );
 
   return {
-    handleMouseDown,
-    handleMouseUp,
-    handleMouseLeave,
-    handleMouseMove,
+    handleDown,
+    handleUp,
+    handleLeave,
+    handleMove,
     currentRect,
   };
 };

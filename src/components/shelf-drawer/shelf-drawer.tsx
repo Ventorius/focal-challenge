@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { MouseEventHandler, TouchEventHandler, useEffect, useRef, useState } from 'react';
 import { Shelf } from '@/components/shelf-drawer/shelf';
 import type { IShelf } from '@/types';
-import { useMouseEvents } from '@/hooks/useMouseEvents';
+import { useEvents } from '@/hooks/useEvents';
 
 type Props = {
   imageUrl: string;
@@ -17,11 +17,7 @@ export const ShelfDrawer = ({ imageUrl, shelves, onChange }: Props) => {
 
   const imageRef = useRef<HTMLImageElement>(null);
 
-  const { handleMouseLeave, handleMouseMove, handleMouseDown, handleMouseUp, currentRect } = useMouseEvents(
-    shelves,
-    onChange,
-    imageRef,
-  );
+  const { handleDown, handleUp, handleLeave, handleMove, currentRect } = useEvents(shelves, onChange, imageRef);
 
   const handleShelfClick = (index: number) => {
     if (selectedShelf === index) {
@@ -63,14 +59,14 @@ export const ShelfDrawer = ({ imageUrl, shelves, onChange }: Props) => {
         draggable={false}
         className="object-cover user-select-none user-drag-none"
         ref={imageRef}
-        onMouseDown={handleMouseDown as MouseEventHandler}
-        onMouseUp={handleMouseUp as MouseEventHandler}
-        onMouseLeave={handleMouseLeave as MouseEventHandler}
-        onMouseMove={handleMouseMove as MouseEventHandler}
-        onTouchStart={handleMouseDown as TouchEventHandler}
-        onTouchEnd={handleMouseUp as TouchEventHandler}
-        onTouchMove={handleMouseMove as TouchEventHandler}
-        onTouchCancel={handleMouseLeave as TouchEventHandler}
+        onMouseDown={handleDown as MouseEventHandler}
+        onMouseUp={handleUp as MouseEventHandler}
+        onMouseLeave={handleLeave as MouseEventHandler}
+        onMouseMove={handleMove as MouseEventHandler}
+        onTouchStart={handleDown as TouchEventHandler}
+        onTouchEnd={handleUp as TouchEventHandler}
+        onTouchMove={handleMove as TouchEventHandler}
+        onTouchCancel={handleLeave as TouchEventHandler}
       />
       {shelves?.map((shelf, index) => (
         <Shelf isSelected={selectedShelf === index} key={index} onClick={() => handleShelfClick(index)} shelf={shelf} />
