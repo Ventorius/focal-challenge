@@ -78,7 +78,7 @@ export const ShelfDrawer = ({ imageUrl, shelves, onChange }: Props) => {
         <button
           onClick={removeSelectedShelf}
           disabled={selectedShelf === null}
-          className="border-slate-800 border-2 p-4 rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="border-slate-800 border-2 p-4 rounded-lg cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
         >
           Remove Selected Shelf
         </button>
