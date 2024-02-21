@@ -2,17 +2,10 @@
 import { ShelfDrawer } from '@/components/shelf-drawer';
 import { useState } from 'react';
 
+import type { ShelfShape } from '@/types';
+
 export default function Home() {
-  const [shelves, setShelves] = useState<[number, number][][]>([
-    [
-      [0, 0],
-      [40, 50],
-    ],
-    [
-      [10, 10],
-      [80, 90],
-    ],
-  ]);
+  const [shelves, setShelves] = useState<ShelfShape[]>([]);
   const onChange = (shelves: [number, number][][]) => {
     setShelves(shelves);
   };

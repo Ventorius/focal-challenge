@@ -1,8 +1,9 @@
 import { cn } from '@/utils/cn';
 import { ComponentPropsWithoutRef } from 'react';
+import { ShelfShape } from '@/types';
 
 type Props = ComponentPropsWithoutRef<'div'> & {
-  coordinates: [number, number][];
+  coordinates: ShelfShape;
   isTemporary?: boolean;
 };
 

@@ -4,18 +4,20 @@ import Image from 'next/image';
 
 import { useRef, useState, MouseEvent } from 'react';
 import { Shelf } from '@/components/shelf-drawer/shelf';
+import type { ShelfShape } from '@/types';
 
 type Props = {
   imageUrl: string;
-  shelves: [number, number][][];
-  onChange(shelves: [number, number][][]): void;
+  shelves: ShelfShape[];
+  onChange(shelves: ShelfShape[]): void;
 };
 export const ShelfDrawer = ({ imageUrl, shelves, onChange }: Props) => {
-  const [drawing, setDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState<[number, number] | null>(null);
   const [selectedShelf, setSelectedShelf] = useState<number | null>(null);
   const imageRef = useRef<HTMLImageElement>(null);
-  const [currentRect, setCurrentRect] = useState(null);
+  const [currentRect, setCurrentRect] = useState<ShelfShape | null>(null);
+
+  const isDrawing = startPoint !== null;
 
   const handleMouseDown = (e: MouseEvent<HTMLImageElement>) => {
     if (imageRef.current) {
@@ -24,22 +26,19 @@ export const ShelfDrawer = ({ imageUrl, shelves, onChange }: Props) => {
       const y = e.clientY - rect.top;
 
       setStartPoint([x, y]);
-      setDrawing(true);
 
-      console.log({ x, y });
       setSelectedShelf(null);
     }
   };
 
   const handleMouseUp = (e: MouseEvent<HTMLImageElement>) => {
-    if (!drawing || !startPoint) return;
+    if (!isDrawing) return;
 
     if (imageRef.current) {
       const rect = imageRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const newShelf = [startPoint, [x, y]];
-      setDrawing(false);
+      const newShelf: ShelfShape = [startPoint, [x, y]];
 
       setStartPoint(null);
 
@@ -48,7 +47,7 @@ export const ShelfDrawer = ({ imageUrl, shelves, onChange }: Props) => {
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLImageElement>) => {
-    if (!drawing || !startPoint) return;
+    if (!isDrawing) return;
 
     if (imageRef.current) {
       const rect = imageRef.current.getBoundingClientRect();
