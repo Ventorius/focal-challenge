@@ -1,1 +1,6 @@
-export type ShelfShape = [number, number][];
+export type ICoordinates = [number, number][];
+
+export type IShelf = {
+  coordinates: ICoordinates;
+  color: string;
+};

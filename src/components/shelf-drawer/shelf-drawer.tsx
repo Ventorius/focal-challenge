@@ -2,79 +2,30 @@
 
 import Image from 'next/image';
 
-import { useRef, useCallback, useState, MouseEvent, useEffect } from 'react';
+import { useState } from 'react';
 import { Shelf } from '@/components/shelf-drawer/shelf';
-import type { ShelfShape } from '@/types';
+import type { IShelf } from '@/types';
+import { useMouseEvents } from '@/hooks/useMouseEvents';
 
 type Props = {
   imageUrl: string;
-  shelves: ShelfShape[];
-  onChange(shelves: ShelfShape[]): void;
+  shelves: IShelf[];
+  onChange(shelves: IShelf[]): void;
 };
 export const ShelfDrawer = ({ imageUrl, shelves, onChange }: Props) => {
-  const [startPoint, setStartPoint] = useState<[number, number] | null>(null);
   const [selectedShelf, setSelectedShelf] = useState<number | null>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
-  const [currentRect, setCurrentRect] = useState<ShelfShape | null>(null);
 
-  const isDrawing = startPoint !== null;
-
-  const handleMouseDown = useCallback((e: MouseEvent<HTMLImageElement>) => {
-    if (imageRef.current) {
-      const rect = imageRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      setStartPoint([x, y]);
-
-      setSelectedShelf(null);
-    }
-  }, []);
-
-  const handleMouseUp = useCallback(
-    (e: MouseEvent<HTMLImageElement>) => {
-      if (!isDrawing) return;
-
-      if (imageRef.current) {
-        const rect = imageRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const newShelf: ShelfShape = [startPoint, [x, y]];
-
-        onChange([...shelves, newShelf]);
-        setCurrentRect(null);
-        setStartPoint(null);
-      }
-    },
-    [startPoint, shelves, onChange],
-  );
-
-  const handleMouseLeave = useCallback(
-    (e: MouseEvent<HTMLImageElement>) => {
-      if (!isDrawing || e.buttons !== 0) return;
-
-      setCurrentRect(null);
-      setStartPoint(null);
-    },
-    [isDrawing],
-  );
-
-  const handleMouseMove = useCallback(
-    (e: MouseEvent<HTMLImageElement>) => {
-      if (!isDrawing) return;
-
-      if (imageRef.current) {
-        const rect = imageRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        setCurrentRect([startPoint, [x, y]]);
-      }
-    },
-    [startPoint],
+  const { handleMouseLeave, handleMouseMove, handleMouseDown, handleMouseUp, imageRef, currentRect } = useMouseEvents(
+    shelves,
+    onChange,
   );
 
   const handleShelfClick = (index: number) => {
-    setSelectedShelf(index);
+    if (selectedShelf === index) {
+      setSelectedShelf(null);
+    } else {
+      setSelectedShelf(index);
+    }
   };
 
   const removeSelectedShelf = () => {
@@ -101,19 +52,20 @@ export const ShelfDrawer = ({ imageUrl, shelves, onChange }: Props) => {
         onMouseMove={handleMouseMove}
       />
       {shelves?.map((shelf, index) => (
-        <Shelf
-          isSelected={selectedShelf === index}
-          key={index}
-          onClick={() => handleShelfClick(index)}
-          coordinates={shelf}
-        />
+        <Shelf isSelected={selectedShelf === index} key={index} onClick={() => handleShelfClick(index)} shelf={shelf} />
       ))}
 
-      {currentRect && <Shelf isTemporary coordinates={currentRect} />}
+      {currentRect && <Shelf isTemporary shelf={currentRect} />}
 
-      <button onClick={removeSelectedShelf} disabled={selectedShelf === null}>
-        Remove Selected Shelf
-      </button>
+      <div className="mt-8">
+        <button
+          onClick={removeSelectedShelf}
+          disabled={selectedShelf === null}
+          className="border-slate-800 border-2 p-4 rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Remove Selected Shelf
+        </button>
+      </div>
     </div>
   );
 };
