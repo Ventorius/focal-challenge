@@ -1,37 +1,68 @@
-import { MouseEvent, useCallback, useRef, useState } from 'react';
+import {
+  MouseEvent,
+  MouseEventHandler,
+  RefObject,
+  SyntheticEvent,
+  TouchEventHandler,
+  useCallback,
+  useState,
+} from 'react';
 import type { IShelf } from '@/types';
 import { generateRandomColor } from '@/utils/generateRandomColor';
 
-export const useMouseEvents = (shelves: IShelf[], onChange: (shelves: IShelf[]) => void) => {
+export const useMouseEvents = (
+  shelves: IShelf[],
+  onChange: (shelves: IShelf[]) => void,
+  imageRef: RefObject<HTMLImageElement>,
+) => {
   const [startPoint, setStartPoint] = useState<[number, number] | null>(null);
   const [currentRect, setCurrentRect] = useState<IShelf | null>(null);
 
   const isDrawing = startPoint !== null;
 
-  const [selectedShelf, setSelectedShelf] = useState<number | null>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
-
-  const handleMouseDown = useCallback((e: MouseEvent<HTMLImageElement>) => {
-    if (imageRef.current) {
-      const rect = imageRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      setStartPoint([x, y]);
-      setSelectedShelf(null);
+  const getCoordinates = (event: TouchEvent | MouseEvent) => {
+    if ('changedTouches' in event && event.changedTouches.length > 0) {
+      return {
+        x: event.changedTouches[0].clientX,
+        y: event.changedTouches[0].clientY,
+      };
+    } else if ('clientX' in event && 'clientY' in event) {
+      return {
+        x: event.clientX,
+        y: event.clientY,
+      };
     }
-  }, []);
 
-  const handleMouseUp = useCallback(
-    (e: MouseEvent<HTMLImageElement>) => {
+    return { x: 0, y: 0 };
+  };
+
+  const handleMouseDown: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
+    (e: SyntheticEvent) => {
+      if (imageRef.current) {
+        const { x, y } = getCoordinates(e as MouseEvent | TouchEvent);
+
+        const rect = imageRef.current.getBoundingClientRect();
+        const relativeX = x - rect.left;
+        const relativeY = y - rect.top;
+
+        setStartPoint([relativeX, relativeY]);
+      }
+    },
+    [],
+  );
+
+  const handleMouseUp: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
+    (e: SyntheticEvent) => {
       if (!isDrawing) return;
 
       if (imageRef.current) {
+        const { x, y } = getCoordinates(e as MouseEvent | TouchEvent);
+
         const rect = imageRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const relativeX = x - rect.left;
+        const relativeY = y - rect.top;
         const newShelf: IShelf = {
-          coordinates: [startPoint, [x, y]],
+          coordinates: [startPoint, [relativeX, relativeY]],
           color: generateRandomColor(shelves),
         };
 
@@ -43,9 +74,11 @@ export const useMouseEvents = (shelves: IShelf[], onChange: (shelves: IShelf[]) 
     [startPoint, shelves, onChange],
   );
 
-  const handleMouseLeave = useCallback(
-    (e: MouseEvent<HTMLImageElement>) => {
-      if (!isDrawing || e.buttons !== 0) return;
+  const handleMouseLeave: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
+    (e: SyntheticEvent) => {
+      if ('buttons' in e) {
+        if (!isDrawing || e.buttons !== 0) return;
+      }
 
       setCurrentRect(null);
       setStartPoint(null);
@@ -53,22 +86,23 @@ export const useMouseEvents = (shelves: IShelf[], onChange: (shelves: IShelf[]) 
     [isDrawing],
   );
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent<HTMLImageElement>) => {
+  const handleMouseMove: TouchEventHandler<HTMLImageElement> | MouseEventHandler<HTMLImageElement> = useCallback(
+    (e: SyntheticEvent) => {
       if (!isDrawing) return;
 
       if (imageRef.current) {
+        const { x, y } = getCoordinates(e as MouseEvent | TouchEvent);
+
         const rect = imageRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        setCurrentRect({ coordinates: [startPoint, [x, y]], color: 'bg-red-500' });
+        const relativeX = x - rect.left;
+        const relativeY = y - rect.top;
+        setCurrentRect({ coordinates: [startPoint, [relativeX, relativeY]], color: 'bg-red-500' });
       }
     },
     [startPoint],
   );
 
   return {
-    imageRef,
     handleMouseDown,
     handleMouseUp,
     handleMouseLeave,
